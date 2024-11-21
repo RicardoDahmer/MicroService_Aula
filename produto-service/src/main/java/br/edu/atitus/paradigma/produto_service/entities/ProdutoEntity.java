@@ -10,6 +10,7 @@ import jakarta.persistence.Transient;
 @Entity
 @Table(name = "produto")
 public class ProdutoEntity {
+	
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	private Integer id;
@@ -18,18 +19,11 @@ public class ProdutoEntity {
 	private String modelo;
 	private double valor;
 	
-	@Transient
+	@Transient 
 	private String ambiente;
+	
 	@Transient
 	private double valorConvertido;
-
-	public double getValorConvertido() {
-		return valorConvertido;
-	}
-
-	public void setValorConvertido(double valorConvertido) {
-		this.valorConvertido = valorConvertido;
-	}
 
 	public Integer getId() {
 		return id;
@@ -70,7 +64,15 @@ public class ProdutoEntity {
 	public void setAmbiente(String ambiente) {
 		this.ambiente = ambiente;
 	}
-	
-	
 
+	public double getValorConvertido() {
+		return valorConvertido;
+	}
+
+	public void setValorConvertido(double valorConvertido) {
+		this.valorConvertido = valorConvertido;
+	}
+
+	
+	
 }

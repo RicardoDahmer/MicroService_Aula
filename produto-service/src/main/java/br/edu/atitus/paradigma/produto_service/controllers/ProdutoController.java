@@ -20,13 +20,12 @@ public class ProdutoController {
 	private final ProdutoRepository repository;
 	private final CambioClient cambioClient;
 	
-	public ProdutoController(ProdutoRepository repository,
-			CambioClient cambioClient) {
+	public ProdutoController(ProdutoRepository repository, CambioClient cambioClient) {
 		super();
 		this.repository = repository;
 		this.cambioClient = cambioClient;
 	}
-
+	
 	@Value("${server.port}")
 	private int porta;
 	
@@ -34,24 +33,20 @@ public class ProdutoController {
 	public ResponseEntity<ProdutoEntity> getProduto(
 			@PathVariable Integer idProduto,
 			@PathVariable String moeda) throws Exception{
-		
-		//vai buscar no banco de dados
 		ProdutoEntity produto = repository.findById(idProduto)
-				.orElseThrow(() -> new Exception("Produto não encontrado!"));
+				.orElseThrow(() -> new Exception("Produto não encontrado"));
 		
-		CambioResponse cambio = cambioClient.getCambio(
-				produto.getValor(), "USD", moeda);
+		CambioResponse cambio = cambioClient.getCambio(produto.getValor(), "USD", moeda);
 		
 		produto.setValorConvertido(cambio.getValorConvertido());
-		produto.setAmbiente("Produto-service run in: " + porta 
-				+ " - " + cambio.getAmbiente());
+		produto.setAmbiente("Produto-Service run in port: " + porta+" - "+cambio.getAmbiente());
 		return ResponseEntity.ok(produto);
 	}
 	
 	@ExceptionHandler(Exception.class)
-	public ResponseEntity<String> handler(Exception e) {
-		String message = e.getMessage().replaceAll("[\\r\\n]", "");
-		return ResponseEntity.badRequest().body(message);
+	public ResponseEntity<String> handleException(Exception e){
+		String cleanMessage = e.getMessage().replaceAll("[\\r\\n]", "");
+		return ResponseEntity.badRequest().body(cleanMessage);
 	}
 
 }

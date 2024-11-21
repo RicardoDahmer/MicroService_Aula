@@ -12,7 +12,7 @@
 	<artifactId>produto-service</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>produto-service</name>
-	<description>Microservice para gerenciamento de produtos</description>
+	<description>Projeto MicroService parta gerenciamento de produtos</description>
 	<url/>
 	<licenses>
 		<license/>
@@ -31,6 +31,10 @@
 		<spring-cloud.version>2023.0.3</spring-cloud.version>
 	</properties>
 	<dependencies>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-actuator</artifactId>
+		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-jpa</artifactId>
@@ -55,10 +59,6 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-actuator</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>

@@ -1,7 +1,7 @@
 package br.edu.atitus.paradigma.produto_service.clients;
 
 public class CambioResponse {
-
+	
 	private Integer id;
 	private String origem;
 	private String destino;
@@ -46,4 +46,5 @@ public class CambioResponse {
 		this.ambiente = ambiente;
 	}
 	
+
 }

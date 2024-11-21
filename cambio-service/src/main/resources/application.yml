@@ -4,7 +4,7 @@ spring:
   application:
     name: cambio-service
   datasource:
-    url: jdbc:postgresql://localhost/cambio_db_b
+    url: jdbc:postgresql://localhost/cambio_db
     username: postgres
     password: postgres
   jpa:
@@ -21,21 +21,18 @@ spring:
     type: caffeine
     caffeine:
       spec: maximumSize=500,expireAfterWrite=10m
-
 management:
   endpoints:
     web:
       exposure:
         include:
         - '*'
-
 eureka:
   client:
     service-url:
       defaultZone: http://localhost:8761/eureka
   instance:
     prefer-ip-address: true
-
 resilience4j:
   circuitbreaker:
     instances:
@@ -46,4 +43,4 @@ resilience4j:
         failureRateThreshold: 50
         waitDurationInOpenState: 10s
         permittedNumberOfCallsInHalfOpenState: 3
-        automatic-transition-from-open-to-half-open-enabled: true
+        automatic-transition-from-open-to-half-open-enabled: true 

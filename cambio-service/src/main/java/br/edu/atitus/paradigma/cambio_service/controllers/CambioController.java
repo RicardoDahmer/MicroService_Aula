@@ -19,12 +19,10 @@ import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 @RestController
 @RequestMapping("cambio-service")
 public class CambioController {
-	
+
 	private final CambioRepository cambioRepository;
 	private final CotacaoClient cotacaoClient;
 	private final CacheManager cacheManager;
-	
-	private final String CAMBIO_CACHE = "cambioCache";
 
 	public CambioController(CambioRepository cambioRepository, CotacaoClient cotacaoClient, CacheManager cacheManager) {
 		super();
@@ -32,21 +30,20 @@ public class CambioController {
 		this.cotacaoClient = cotacaoClient;
 		this.cacheManager = cacheManager;
 	}
-	
+
 	@Value("${server.port}")
 	private int porta;
-	
+
 	@GetMapping("/{valor}/{origem}/{destino}")
-	@CircuitBreaker(name = "cotacaoClient", fallbackMethod = "getCambioFromDB")
+	@CircuitBreaker(name = "cotacaoClient", fallbackMethod = "getCambioFromLocal")
 	public ResponseEntity<CambioEntity> getCambio(@PathVariable double valor, @PathVariable String origem,
 			@PathVariable String destino) throws Exception {
 
-		String keyCambioCache = origem + "_" + destino;
-
-		CambioEntity cambio = cacheManager.getCache(CAMBIO_CACHE).get(keyCambioCache, CambioEntity.class);
+		CambioEntity cambio = cacheManager.getCache("cambioCache")
+				.get(origem + destino, CambioEntity.class);
 		if (cambio == null) {
-			cambio = getCambioFromBancoCentral(origem, destino);
-			cacheManager.getCache(CAMBIO_CACHE).put(keyCambioCache, cambio);
+			cambio = getCambioFromBC(origem, destino);
+			cacheManager.getCache("cambioCache").put(origem+destino, cambio);
 		}
 
 		cambio.setValorConvertido(valor * cambio.getFator());
@@ -54,33 +51,33 @@ public class CambioController {
 		return ResponseEntity.ok(cambio);
 	}
 
-	public CambioEntity getCambioFromBancoCentral(String origem, String destino) {
-		CambioEntity cambio = new CambioEntity();
-		cambio.setOrigem(origem);
-		cambio.setDestino(destino);
-		double fator;
-
-		CotacaoResponse cotacaoOrigem = cotacaoClient.getCotacao(origem, "10-16-2024");
-		double fatorOrigem = cotacaoOrigem.getValue().get(0).getCotacaoVenda();
-		if (destino.equals("BRL")) {
-			fator = fatorOrigem;
-		} else {
-			CotacaoResponse cotacaoDestino = cotacaoClient.getCotacao(destino, "10-16-2024");
-			double fatorDestino = cotacaoDestino.getValue().get(0).getCotacaoVenda();
-			fator = fatorOrigem / fatorDestino;
-		}
-		cambio.setFator(fator);
-		return cambio;
-	}
-
-	public ResponseEntity<CambioEntity> getCambioFromDB(double valor, String origem, String destino, Throwable e)
-			throws Exception {
-
+	public ResponseEntity<CambioEntity> getCambioFromLocal(double valor, String origem, String destino, Throwable e) throws Exception {
 		CambioEntity cambio = cambioRepository.findByOrigemAndDestino(origem, destino)
 				.orElseThrow(() -> new Exception("Câmbio não encontrado para esta origem e destino"));
 		cambio.setValorConvertido(valor * cambio.getFator());
-		cambio.setAmbiente("Cambio-Service run in port: " + porta + "(From DB)");
+		cambio.setAmbiente("Cambio-Service run in port: " + porta);
 		return ResponseEntity.ok(cambio);
+	}
+
+	public CambioEntity getCambioFromBC(String origem, String destino) {
+	
+		CambioEntity cambio = new CambioEntity();
+		cambio.setOrigem(origem);
+		cambio.setDestino(destino);
+
+		CotacaoResponse cotacaoOrigem = cotacaoClient.getCotacao(origem, "10-10-2024");
+		double fator;
+		if (destino.equals("BRL")) {
+			fator = cotacaoOrigem.getValue().get(0).getCotacaoVenda();
+		} else {
+		
+			CotacaoResponse cotacaoDestino = cotacaoClient.getCotacao(destino, "10-10-2024");
+			fator = cotacaoOrigem.getValue().get(0).getCotacaoVenda()
+					/ cotacaoDestino.getValue().get(0).getCotacaoVenda();
+		}
+
+		cambio.setFator(fator);
+		return cambio;
 	}
 
 	@ExceptionHandler(Exception.class)
