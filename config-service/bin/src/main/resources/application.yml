@@ -7,7 +7,7 @@ spring:
     config:
       server:
         git:
-          uri: https://github.com/phdebortoli/microservices-java.git
+          uri: https://github.com/RicardoDahmer/MicroService_Aula.git
           default-label: main
           search-paths:
           - 'configs/{application}'
